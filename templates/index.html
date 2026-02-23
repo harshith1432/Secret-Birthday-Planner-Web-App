@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="dashboard-header"
+    style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 20px;">
+    <div>
+        <h2>Your Secret Plans</h2>
+        <p>Shhh! Don't let them find out! 🤫</p>
+    </div>
+    <div class="card glass-card" style="padding: 15px 25px; margin: 0; min-width: 300px;">
+        <p style="font-size: 0.9rem; margin-bottom: 10px; font-weight: 600;">Join with Invite Code</p>
+        <form action="{{ url_for('join_with_code') }}" method="POST" style="display: flex; gap: 10px;">
+            <input type="text" name="invite_code" placeholder="e.g. BDAY-123" required
+                style="flex: 1; padding: 8px 12px; border-radius: 8px; border: 1px solid #ddd; text-transform: uppercase;">
+            <button type="submit" class="btn btn-primary" style="padding: 8px 15px; font-size: 0.85rem;">Join</button>
+        </form>
+    </div>
+</div>
+
+<div class="event-grid">
+    {% for event in events %}
+    <div class="card event-card">
+        {% if event.is_hidden %}
+        <span class="secret-badge">Top Secret</span>
+        {% endif %}
+        <h3>{{ event.person_name }}'s Birthday</h3>
+        <p>📅 {{ event.birthday_date.strftime('%B %d, %Y') }}</p>
+        <p>📍 {{ event.location }}</p>
+        <p>💰 Budget: ₹{{ "{:,.2f}".format(event.total_budget) }}</p>
+        <div style="margin-top: 20px; display: flex; gap: 10px;">
+            <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-primary"
+                style="padding: 0.5rem 1rem; font-size: 0.9rem;">View Summary</a>
+            <a href="{{ url_for('delete_event', event_id=event.id) }}" class="btn"
+                style="padding: 0.5rem 1rem; font-size: 0.9rem; color: #ff477e; border: 1px solid #ff477e;">Delete</a>
+        </div>
+    </div>
+    {% else %}
+    <div class="card" style="grid-column: 1 / -1; text-align: center;">
+        <p>No birthday plans yet. Start by creating a surprise!</p>
+        <a href="{{ url_for('create_event') }}" class="btn btn-primary" style="margin-top: 20px;">Create First Event</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

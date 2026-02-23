@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 450px; margin: 100px auto;">
+    <div class="card glass-card shadow-lg" style="padding: 40px; text-align: center;">
+        <div style="font-size: 3.5rem; margin-bottom: 20px;">🔒</div>
+        <h2 style="margin-bottom: 10px; font-weight: 700; color: var(--secondary-color);">Secret Access</h2>
+        <p style="color: #666; margin-bottom: 30px;">Enter your credentials to manage your secret plans.</p>
+
+        <form method="POST">
+            <div class="form-group" style="text-align: left; margin-bottom: 20px;">
+                <label for="name" style="font-weight: 600; font-size: 0.9rem;">Full Name</label>
+                <input type="text" id="name" name="name" placeholder="Who are you?" required
+                    style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #eee; background: rgba(255,255,255,0.7); font-size: 1rem;">
+            </div>
+
+            <div class="form-group" style="text-align: left; margin-bottom: 30px;">
+                <label for="unique_number" style="font-weight: 600; font-size: 0.9rem;">Unique Number (PIN)</label>
+                <input type="password" id="unique_number" name="unique_number" placeholder="Enter your secret code"
+                    required
+                    style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #eee; background: rgba(255,255,255,0.7); font-size: 1rem; letter-spacing: 2px;">
+                <small style="color: #888; display: block; margin-top: 5px;">First time? Just enter any name and code to
+                    start!</small>
+            </div>
+
+            <button type="submit" class="btn btn-primary"
+                style="width: 100%; padding: 16px; font-weight: 700; border-radius: 12px; transition: transform 0.2s;">
+                Open Private Dashboard
+            </button>
+        </form>
+
+        <div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; font-size: 0.85rem; color: #999;">
+            <p>Protected by Celebration Security™</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

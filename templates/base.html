@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secret Birthday Planner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <div class="bg-decoration"></div>
+
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+    </div>
+
+    <div class="container">
+        <header>
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <h1>🎉 Secret Birthday Planner</h1>
+                {% if session.get('user_name') %}
+                <span class="user-badge"
+                    style="background: rgba(255,255,255,0.2); padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; font-weight: 600; border: 1px solid rgba(255,255,255,0.3);">
+                    👤 {{ session.get('user_name') }}
+                </span>
+                {% endif %}
+            </div>
+            <nav style="display: flex; align-items: center; gap: 15px; width: 100%; margin-top: 20px;">
+                <a href="{{ url_for('dashboard') }}" class="btn">Dashboard</a>
+                <a href="{{ url_for('create_event') }}" class="btn btn-primary">+ Plan Surprise</a>
+                {% if session.get('user_id') %}
+                <a href="{{ url_for('logout') }}"
+                    style="color: #ff477e; text-decoration: none; font-size: 0.9rem; font-weight: 600; margin-left: auto;">Logout
+                    🚪</a>
+                {% endif %}
+            </nav>
+        </header>
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+
+</html>

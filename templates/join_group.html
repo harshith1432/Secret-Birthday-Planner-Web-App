@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 500px; margin: 80px auto;">
+    <div class="card glass-card" style="text-align: center; padding: 40px;">
+        <div style="font-size: 3rem; margin-bottom: 20px;">🎁</div>
+        <h2 style="margin-bottom: 10px;">You're Invited!</h2>
+        <p style="color: #666; margin-bottom: 30px;">
+            Join the group to help plan <strong>{{ event.person_name }}'s</strong> secret birthday surprise!
+        </p>
+
+        <form method="POST">
+            <div class="form-group" style="text-align: left;">
+                <label for="user_name">Enter Your Name to Join</label>
+                <input type="text" id="user_name" name="user_name" placeholder="e.g. John Doe" required
+                    style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; font-size: 1rem;">
+            </div>
+
+            <button type="submit" class="btn btn-primary"
+                style="width: 100%; padding: 15px; margin-top: 20px; font-weight: 600;">
+                Join Secret Group
+            </button>
+        </form>
+
+        <p style="font-size: 0.8rem; color: #888; margin-top: 30px;">
+            Planning in <strong>{{ event.location }}</strong> · {{ event.friends_count }} friends already invited
+        </p>
+    </div>
+</div>
+{% endblock %}

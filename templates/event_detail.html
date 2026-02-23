@@ -1,0 +1,407 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="summary-grid">
+    <div class="left-col">
+        <div class="card glass-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>{{ event.person_name }}'s Secret Plan</h2>
+                {% if event.is_hidden %}
+                <span class="secret-badge">Top Secret</span>
+                {% endif %}
+            </div>
+
+            <div class="countdown">
+                <span class="countdown-number" id="countdown-timer">{{ days_left }}</span>
+                <p>Days until the BIG surprise!</p>
+            </div>
+
+            <div style="margin-top: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h3 style="margin: 0;">📍 Event Overview</h3>
+                    <button class="btn btn-secondary" onclick="toggleEditModal()"
+                        style="padding: 5px 12px; font-size: 0.75rem;">✏️ Edit Requirements</button>
+                </div>
+                <p><strong>City:</strong> <span id="display-location">{{ event.location }}</span></p>
+                {% if event.sub_location %}
+                <p><strong>Selected Area:</strong> <span id="display-sub_location">{{ event.sub_location }}</span></p>
+                {% endif %}
+                <p><strong>Date:</strong> {{ event.birthday_date.strftime('%B %d, %Y') }}</p>
+                <p><strong>Planned For:</strong> {{ event.friends_count }} friends</p>
+                <p><strong>Needs Selected:</strong>
+                    <span id="display-needs">
+                        {% if event.needs %}
+                        {{ event.needs.replace(',', ' • ').title() }}
+                        {% else %}
+                        Standard Discovery
+                        {% endif %}
+                    </span>
+                </p>
+            </div>
+        </div>
+
+        <!-- Edit Requirements Modal -->
+        <div id="edit-modal"
+            style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
+            <div class="card glass-card" style="max-width: 500px; width: 90%; padding: 30px;">
+                <h2 style="margin-bottom: 20px;">Edit Party Needs</h2>
+
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label>📍 Change Location</label>
+                    <input type="text" id="edit-location" value="{{ event.location }}" placeholder="City"
+                        style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ddd;">
+                    <input type="text" id="edit-sub_location" value="{{ event.sub_location }}"
+                        placeholder="Area (e.g. Koramangala)"
+                        style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label>✨ Select Requirements</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                        <label
+                            style="display: flex; align-items: center; gap: 10px; font-size: 0.9rem; cursor: pointer;">
+                            <input type="checkbox" name="edit-needs" value="food" {% if 'food' in event.needs
+                                %}checked{% endif %}> 🍕 Food
+                        </label>
+                        <label
+                            style="display: flex; align-items: center; gap: 10px; font-size: 0.9rem; cursor: pointer;">
+                            <input type="checkbox" name="edit-needs" value="cake" {% if 'cake' in event.needs
+                                %}checked{% endif %}> 🎂 Cake
+                        </label>
+                        <label
+                            style="display: flex; align-items: center; gap: 10px; font-size: 0.9rem; cursor: pointer;">
+                            <input type="checkbox" name="edit-needs" value="decor" {% if 'decor' in event.needs
+                                %}checked{% endif %}> 🎈 Decor
+                        </label>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button class="btn btn-primary" onclick="saveChanges()" style="flex: 1;">Save Changes</button>
+                    <button class="btn btn-secondary" onclick="toggleEditModal()" style="flex: 1;">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        {% if event.selected_plan %}
+        <div class="card glass-card confirmed-plan"
+            style="border: 3px solid #4cc9f0; background: rgba(76, 201, 240, 0.1);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                <h2 style="margin: 0;">✅ Confirmed Venue: {{ event.selected_plan.venue_name }}</h2>
+                <button class="btn btn-secondary" onclick="clearPlan()" style="font-size: 0.75rem;">🔄 Change
+                    Venue</button>
+            </div>
+
+            <div style="display: flex; gap: 30px; margin-bottom: 25px;">
+                <img src="{{ event.selected_plan.photo }}"
+                    style="width: 300px; height: 200px; border-radius: 15px; object-fit: cover; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                <div style="flex: 1;">
+                    <h3 style="color: var(--secondary-color); margin-top: 0;">{{ event.selected_plan.venue_type }}</h3>
+                    <p style="font-size: 1.1rem; color: #4CAF50; font-weight: 700; margin: 10px 0;">🎁 {{
+                        event.selected_plan.offer }}</p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+                        <div>
+                            <p style="font-size: 0.8rem; color: #666; margin-bottom: 4px;">🕗 Timings</p>
+                            <p style="font-weight: 600;">{{ event.selected_plan.timings }}</p>
+                        </div>
+                        <div>
+                            <p style="font-size: 0.8rem; color: #666; margin-bottom: 4px;">🔥 Peak Hours</p>
+                            <p style="font-weight: 600;">{{ event.selected_plan.peak_hours }}</p>
+                        </div>
+                        <div>
+                            <p style="font-size: 0.8rem; color: #666; margin-bottom: 4px;">✨ Best Time to Arrive</p>
+                            <p style="font-weight: 600; color: var(--primary-color);">{{ event.selected_plan.best_time
+                                }}</p>
+                        </div>
+                        <div>
+                            <p style="font-size: 0.8rem; color: #666; margin-bottom: 4px;">👥 Crowd Status</p>
+                            <p style="font-weight: 600;">{{ event.selected_plan.crowd }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; border-top: 1px solid #ddd; padding-top: 20px;">
+                <div>
+                    <h4 style="margin-bottom: 10px;">🍽️ Menu Highlights</h4>
+                    <ul style="padding-left: 20px; color: #555;">
+                        {% for item in event.selected_plan.menu_highlights %}
+                        <li>{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="margin-bottom: 10px;">🗺️ Navigation</h4>
+                    <p style="margin-bottom: 15px; font-size: 0.9rem;">📍 {{ event.selected_plan.distance }} from your
+                        starting point.</p>
+                    <a href="{{ event.selected_plan.map_link }}" target="_blank" class="btn btn-primary"
+                        style="display: inline-block; width: 100%; text-align: center; text-decoration: none;">🚀
+                        Navigate on Google Maps</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <h3 style="margin: 20px 0;">{% if event.selected_plan %}🔄 Other Recommended Venues{% else %}🗺️ Smart Plans
+            (Within 5KM Radius of {{ event.sub_location or event.location }}){% endif %}
+        </h3>
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            {% for plan in smart_plans %}
+            {# Only show if not already selected #}
+            {% if not event.selected_plan or event.selected_plan.venue_name != plan.venue_name %}
+            <div class="card glass-card"
+                style="padding: 0; border: 2px solid {% if plan.est_cost <= event.total_budget %}#4cc9f0{% else %}#ddd{% endif %};">
+                <div style="display: flex; height: auto;">
+                    <img src="{{ plan.photo }}" alt="{{ plan.venue_name }}" style="width: 250px; object-fit: cover;">
+                    <div
+                        style="padding: 20px; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <h3 style="margin: 0;">{{ plan.venue_name }}</h3>
+                                <span
+                                    style="background: #ffd700; padding: 2px 8px; border-radius: 5px; font-weight: bold; font-size: 0.8rem;">⭐{{
+                                    plan.rating }}</span>
+                            </div>
+                            <p style="color: #4CAF50; font-weight: 600; margin: 8px 0;">🎁 {{ plan.offer }}</p>
+                            <p style="font-size: 0.85rem; color: #666;">🕒 Best time: {{ plan.best_time }} | 📍 {{
+                                plan.distance }} away</p>
+                        </div>
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;">
+                            <div>
+                                <h4 style="color: var(--primary-color); margin: 0;">₹{{ "{:,.0f}".format(plan.est_cost)
+                                    }}</h4>
+                                <small style="color: #888;">Total Plan Cost</small>
+                            </div>
+                            <button class="btn btn-primary btn-select-plan" data-plan='{{ plan | tojson | safe }}'
+                                style="padding: 8px 15px; font-size: 0.8rem;">Select This Plan</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="right-col">
+        <div class="card glass-card">
+            <h3>💰 Your Budget Breakdown</h3>
+            <div style="text-align: center; margin: 20px 0;">
+                <p style="font-size: 0.85rem; color: #666;">Total Planned Budget</p>
+                <h2 style="font-size: 2.2rem; color: var(--primary-color);">₹{{ "{:,.2f}".format(event.total_budget) }}
+                </h2>
+                <div style="background: #e9ecef; border-radius: 10px; padding: 10px; margin-top: 10px;">
+                    <p style="font-weight: 600;">₹{{ "{:,.2f}".format(event.cost_per_person) }}</p>
+                    <p style="font-size: 0.8rem;">per friend ({{ event.friends_count }} friends)</p>
+                </div>
+            </div>
+
+            <div class="budget-items">
+                {% set breakdown = event.budget_breakdown %}
+                {% if breakdown['cake'] > 0 %}
+                <div class="budget-item">
+                    <span>🎂 Cake</span>
+                    <strong>₹{{ "{:,.2f}".format(breakdown['cake']) }}</strong>
+                </div>
+                {% endif %}
+
+                {% if breakdown['decor'] > 0 %}
+                <div class="budget-item">
+                    <span>🎈 Decoration</span>
+                    <strong>₹{{ "{:,.2f}".format(breakdown['decor']) }}</strong>
+                </div>
+                {% endif %}
+
+                {% if breakdown['food'] > 0 %}
+                <div class="budget-item">
+                    <span>🍕 Food & Catering</span>
+                    <strong>₹{{ "{:,.2f}".format(breakdown['food']) }}</strong>
+                </div>
+                {% endif %}
+            </div>
+
+            {% if event.needs == "" %}
+            <p style="font-size: 0.8rem; color: #888; margin-top: 15px; text-align: center;">No specific items selected.
+                Showing standard split.</p>
+            {% endif %}
+        </div>
+
+        <div class="card glass-card">
+            <h3>📢 Invite Friends</h3>
+            <div
+                style="background: #f8f9fa; border: 1px dashed #ccc; padding: 15px; border-radius: 10px; margin: 15px 0; text-align: center;">
+                <p style="font-size: 0.8rem; color: #666; margin-bottom: 5px;">Invite Code</p>
+                <h3 style="letter-spacing: 5px; color: var(--primary-color); margin: 0;">{{ event.invite_code or
+                    'BDAY-GEN' }}</h3>
+            </div>
+            <p style="font-size: 0.8rem; color: #666; margin-bottom: 15px;">Share this link with your friends to let
+                them join the secret planning group chat!</p>
+            <button class="btn btn-secondary" onclick="copyInviteLink()"
+                style="width: 100%; padding: 12px; font-size: 0.85rem;">
+                📋 Copy Invite Link
+            </button>
+            <input type="hidden" id="invite-link-val"
+                value="{{ request.url_root.rstrip('/') }}{{ url_for('join_group', invite_code=event.invite_code) }}">
+        </div>
+
+        <div class="card glass-card" style="padding: 0; display: flex; flex-direction: column; height: 400px;">
+            <div style="padding: 15px; border-bottom: 1px solid #eee;">
+                <h3 style="margin: 0;">💬 Group Chat</h3>
+                <small style="color: #666;">Talking to: {{ session.get('user_name', 'You') }}</small>
+            </div>
+
+            <div id="chat-box"
+                style="flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; background: rgba(255,255,255,0.3);">
+                <!-- Messages load here -->
+            </div>
+
+            <div style="padding: 10px; border-top: 1px solid #eee; display: flex; gap: 10px;">
+                <input type="text" id="chat-input" placeholder="Enter your opinion..."
+                    style="flex: 1; padding: 8px 12px; border-radius: 20px; border: 1px solid #ddd; outline: none;">
+                <button onclick="sendMessage()" class="btn btn-primary"
+                    style="padding: 10px; border-radius: 50%; aspect-ratio: 1/1; width: 40px; display: flex; align-items: center; justify-content: center;">
+                    ✈️
+                </button>
+            </div>
+        </div>
+
+        <div class="card glass-card">
+            <h3>✨ Surprise Meter</h3>
+            <div
+                style="height: 20px; background: #eee; border-radius: 10px; overflow: hidden; position: relative; margin: 15px 0;">
+                <div id="surprise-meter-bar"
+                    style="height: 100%; width: 65%; background: var(--background-gradient); transition: width 2s ease;">
+                </div>
+            </div>
+            <p style="font-size: 0.8rem; text-align: center;"><span id="surprise-percentage">65</span>% Ready</p>
+
+            <div style="margin-top: 20px; font-size: 0.85rem; line-height: 1.8;">
+                <p>✅ Group Created (Invite Code: {{ event.invite_code }})</p>
+                <p>✅ Guest list growing</p>
+                <p>✅ Area {{ event.sub_location or event.location }} mapped</p>
+                <p>⏳ Collaborative planning active</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function copyInviteLink() {
+        const link = document.getElementById('invite-link-val').value;
+        navigator.clipboard.writeText(link).then(() => {
+            alert('Invite link copied to clipboard!');
+        });
+    }
+
+    async function sendMessage() {
+        const input = document.getElementById('chat-input');
+        const text = input.value.trim();
+        if (!text) return;
+
+        await fetch(`/api/event/{{ event.id }}/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: text })
+        });
+
+        input.value = '';
+        loadMessages();
+    }
+
+    async function loadMessages() {
+        const res = await fetch(`/api/event/{{ event.id }}/chat`);
+        const messages = await res.json();
+        const chatBox = document.getElementById('chat-box');
+
+        chatBox.innerHTML = messages.map(m => `
+            <div style="background: white; padding: 8px 12px; border-radius: 12px; max-width: 85%; align-self: ${m.sender === '{{ session.get("user_name") }}' ? 'flex-end' : 'flex-start'}">
+                <p style="font-size: 0.65rem; font-weight: bold; margin-bottom: 2px; color: var(--primary-color);">${m.sender}</p>
+                <p style="font-size: 0.85rem; margin: 0;">${m.message}</p>
+                <p style="font-size: 0.6rem; color: #888; text-align: right; margin-top: 4px;">${m.time}</p>
+            </div>
+        `).join('');
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function toggleEditModal() {
+        const modal = document.getElementById('edit-modal');
+        modal.style.display = modal.style.display === 'none' ? 'flex' : 'none';
+    }
+
+    async function saveChanges() {
+        const location = document.getElementById('edit-location').value;
+        const sub_location = document.getElementById('edit-sub_location').value;
+        const needs = Array.from(document.querySelectorAll('input[name="edit-needs"]:checked')).map(cb => cb.value);
+
+        const res = await fetch(`/api/event/{{ event.id }}/update`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                location: location,
+                sub_location: sub_location,
+                needs: needs
+            })
+        });
+
+        if (res.ok) {
+            window.location.reload(); // Reload to refresh venues and budget
+        } else {
+            alert('Error updating requirements');
+        }
+    }
+
+    document.addEventListener('click', function (e) {
+        if (e.target && e.target.classList.contains('btn-select-plan')) {
+            const plan = JSON.parse(e.target.getAttribute('data-plan'));
+            selectPlan(plan);
+        }
+    });
+
+    async function selectPlan(plan) {
+        if (!confirm(`Confirm venue: ${plan.venue_name}?`)) return;
+
+        const res = await fetch(`/api/event/{{ event.id }}/select_plan`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ plan: plan })
+        });
+
+        if (res.ok) {
+            window.location.reload();
+        }
+    }
+
+    async function clearPlan() {
+        if (!confirm("Remove selected venue?")) return;
+
+        const res = await fetch(`/api/event/{{ event.id }}/select_plan`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ plan: null })
+        });
+
+        if (res.ok) {
+            window.location.reload();
+        }
+    }
+
+    // Refresh chat every 3 seconds
+    setInterval(loadMessages, 3000);
+    loadMessages();
+</script>
+
+<style>
+    @media (max-width: 900px) {
+        .left-col div[style*="display: flex; height: auto;"] {
+            flex-direction: column;
+        }
+
+        .left-col img {
+            width: 100% !important;
+            height: 200px !important;
+        }
+    }
+</style>
+{% endblock %}
